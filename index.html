@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TypeArcade - Responsive Typing Challenge Game</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              cyan: '#38bdf8',
+              violet: '#8b5cf6',
+              emerald: '#10b981',
+              rose: '#f43f5e',
+              amber: '#f59e0b',
+              dark: '#090d16',
+              darker: '#05070c'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Fira Code', 'Courier New', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden">
+
+  <!-- Background decorative grid & glow -->
+  <div class="fixed inset-0 pointer-events-none z-0">
+    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(56,189,248,0.12)_0%,rgba(15,23,42,0)_70%)]"></div>
+    <div class="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-purple-600/10 blur-[130px] rounded-full"></div>
+    <div class="absolute bottom-0 inset-x-0 h-40 bg-gradient-to-t from-slate-950 to-transparent"></div>
+  </div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="relative z-30 w-full border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <!-- Logo -->
+      <div id="btn-brand-home" class="flex items-center gap-3 cursor-pointer group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-violet-600 flex items-center justify-center shadow-lg shadow-cyan-500/25 group-hover:scale-105 transition-transform">
+          <i data-lucide="keyboard" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <span class="font-extrabold text-xl tracking-tight bg-gradient-to-r from-cyan-400 via-sky-300 to-violet-400 bg-clip-text text-transparent">
+            TYPE<span class="text-white">ARCADE</span>
+          </span>
+          <span class="hidden sm:inline-block ml-2 text-xs font-mono uppercase tracking-widest text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700/50">v2.0</span>
+        </div>
+      </div>
+
+      <!-- Quick Actions (Audio Toggle, Instructions, Stats) -->
+      <div class="flex items-center gap-2 sm:gap-3">
+        <!-- Audio Mute Button -->
+        <button id="btn-toggle-audio" type="button" title="Toggle Sound (M)" class="p-2 sm:px-3 sm:py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-slate-300 hover:text-white transition flex items-center gap-2 text-sm font-medium">
+          <i id="audio-icon" data-lucide="volume-2" class="w-4 h-4 text-cyan-400"></i>
+          <span class="hidden sm:inline text-xs font-mono" id="audio-status-label">SOUND: ON</span>
+        </button>
+
+        <!-- Instructions Modal Button -->
+        <button id="btn-open-instructions" type="button" title="Game Rules & Guide" class="p-2 sm:px-3 sm:py-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-slate-300 hover:text-white transition flex items-center gap-2 text-sm font-medium">
+          <i data-lucide="help-circle" class="w-4 h-4 text-violet-400"></i>
+          <span class="hidden sm:inline text-xs font-mono">HOW TO PLAY</span>
+        </button>
+
+        <!-- Home Return Button (Visible in-game) -->
+        <button id="btn-nav-home" type="button" class="hidden px-3 py-2 rounded-lg bg-slate-800/90 hover:bg-rose-900/40 border border-slate-700 hover:border-rose-500/40 text-slate-300 hover:text-rose-300 transition text-xs font-mono flex items-center gap-1.5">
+          <i data-lucide="home" class="w-4 h-4"></i>
+          <span>HOME</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="relative z-10 flex-1 flex flex-col max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ========================================== -->
+    <!-- VIEW 1: HOME / GAME MODE SELECTION SCREEN -->
+    <!-- ========================================== -->
+    <section id="view-home" class="flex-1 flex flex-col justify-center items-center py-6 sm:py-12 transition-all duration-300">
+      
+      <!-- Hero Header -->
+      <div class="text-center max-w-2xl mb-10 sm:mb-14">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-xs font-mono tracking-wider mb-4">
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+          DUAL-MODE TYPING CHALLENGE
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+          Master the Keyboard with <br class="hidden sm:block">
+          <span class="bg-gradient-to-r from-cyan-400 via-sky-300 to-violet-400 bg-clip-text text-transparent">Speed & Precision</span>
+        </h1>
+        <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+          Choose a gameplay mode below to sharpen your reflexes and touch-typing mastery. Features dynamic difficulty scaling, sound synthesis, and real-time accuracy diagnostics.
+        </p>
+      </div>
+
+      <!-- Mode Cards Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 w-full max-w-4xl mb-10">
+        
+        <!-- MODE A CARD: BUBBLES -->
+        <div class="glass-panel-accent rounded-2xl p-6 sm:p-8 flex flex-col justify-between hover:border-cyan-400/50 hover:shadow-cyan-500/10 hover:shadow-2xl transition duration-300 group relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-36 h-36 bg-cyan-500/10 rounded-full blur-2xl group-hover:bg-cyan-500/20 transition"></div>
+          
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono uppercase tracking-widest text-cyan-400 bg-cyan-950/80 px-2.5 py-1 rounded-md border border-cyan-800/60">
+                Mode A • Letter Recognition
+              </span>
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30">
+                <i data-lucide="circle-dot" class="w-5 h-5"></i>
+              </div>
+            </div>
+
+            <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+              Bubbles
+              <span class="text-xs font-normal text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded">Action Reflex</span>
+            </h2>
+
+            <p class="text-slate-300 text-sm leading-relaxed mb-6">
+              Bubbles float upward from the deep. Strike matching keys before they cross the top boundary line! Maintain your combo streak while managing dynamic speed escalations.
+            </p>
+
+            <!-- Rules & Features -->
+            <ul class="space-y-2 mb-6 text-xs text-slate-400 font-mono">
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>5+ simultaneous floating bubbles</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Time-based session (1, 3, 5, or 10 minutes)</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-cyan-400"></i>
+                <span>Misses don't end game — play till time runs out!</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Time Limit, Difficulty & Launch -->
+          <div class="border-t border-slate-800/80 pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="w-full sm:w-auto flex gap-2">
+              <div>
+                <label for="bubbles-time-select" class="block text-xs font-mono text-slate-400 mb-1">TIME LIMIT</label>
+                <select id="bubbles-time-select" class="w-full sm:w-28 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-400">
+                  <option value="60">1 Min</option>
+                  <option value="180">3 Mins</option>
+                  <option value="300" selected>5 Mins</option>
+                  <option value="600">10 Mins</option>
+                </select>
+              </div>
+              <div>
+                <label for="bubbles-diff-select" class="block text-xs font-mono text-slate-400 mb-1">DIFFICULTY</label>
+                <select id="bubbles-diff-select" class="w-full sm:w-28 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-cyan-300 focus:outline-none focus:border-cyan-400">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="hard">Hard (+#)</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="btn-start-bubbles-mode" type="button" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-cyan-500/25 transition active:scale-95 flex items-center justify-center gap-2">
+              <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+              <span>START BUBBLES</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MODE B CARD: KEYMAGNET -->
+        <div class="glass-panel-accent rounded-2xl p-6 sm:p-8 flex flex-col justify-between hover:border-violet-400/50 hover:shadow-violet-500/10 hover:shadow-2xl transition duration-300 group relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-36 h-36 bg-violet-500/10 rounded-full blur-2xl group-hover:bg-violet-500/20 transition"></div>
+          
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono uppercase tracking-widest text-violet-400 bg-violet-950/80 px-2.5 py-1 rounded-md border border-violet-800/60">
+                Mode B • Keyboard Precision
+              </span>
+              <div class="w-10 h-10 rounded-xl bg-violet-500/20 text-violet-400 flex items-center justify-center border border-violet-500/30">
+                <i data-lucide="target" class="w-5 h-5"></i>
+              </div>
+            </div>
+
+            <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+              KeyMagnet
+              <span class="text-xs font-normal text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded">Accuracy Sprint</span>
+            </h2>
+
+            <p class="text-slate-300 text-sm leading-relaxed mb-6">
+              Lock onto magnetized target characters using an interactive virtual keyboard. Train touch-typing muscle memory across Home-Row, Alphabet, and Symbol sets under time limits.
+            </p>
+
+            <!-- Rules & Features -->
+            <ul class="space-y-2 mb-6 text-xs text-slate-400 font-mono">
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-violet-400"></i>
+                <span>Practice sets: Home Row (A S D F J K L) & more</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-violet-400"></i>
+                <span>Time-based session (1, 3, 5, or 10 minutes)</span>
+              </li>
+              <li class="flex items-center gap-2">
+                <i data-lucide="check" class="w-3.5 h-3.5 text-violet-400"></i>
+                <span>Reaction time tracking (milliseconds per key)</span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Time Limit, Key Set / Difficulty & Launch -->
+          <div class="border-t border-slate-800/80 pt-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="w-full sm:w-auto flex flex-wrap gap-2">
+              <div>
+                <label for="keymagnet-time-select" class="block text-xs font-mono text-slate-400 mb-1">TIME LIMIT</label>
+                <select id="keymagnet-time-select" class="w-full sm:w-24 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-violet-300 focus:outline-none focus:border-violet-400">
+                  <option value="60">1 Min</option>
+                  <option value="180">3 Mins</option>
+                  <option value="300" selected>5 Mins</option>
+                  <option value="600">10 Mins</option>
+                </select>
+              </div>
+              <div>
+                <label for="keymagnet-keyset-select" class="block text-xs font-mono text-slate-400 mb-1">KEY SET</label>
+                <select id="keymagnet-keyset-select" class="w-full sm:w-28 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-violet-300 focus:outline-none focus:border-violet-400">
+                  <option value="home-row" selected>Home Row</option>
+                  <option value="top-row">Top Row</option>
+                  <option value="bottom-row">Bottom Row</option>
+                  <option value="full-alpha">Full Alpha</option>
+                  <option value="numbers-symbols">Symbols</option>
+                </select>
+              </div>
+              <div>
+                <label for="keymagnet-diff-select" class="block text-xs font-mono text-slate-400 mb-1">DIFF</label>
+                <select id="keymagnet-diff-select" class="w-full sm:w-20 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-violet-300 focus:outline-none focus:border-violet-400">
+                  <option value="easy">Easy</option>
+                  <option value="medium" selected>Med</option>
+                  <option value="hard">Hard</option>
+                </select>
+              </div>
+            </div>
+
+            <button id="btn-start-keymagnet-mode" type="button" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-violet-500/25 transition active:scale-95 flex items-center justify-center gap-2">
+              <i data-lucide="play" class="w-4 h-4 fill-white"></i>
+              <span>START MAGNET</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- High Scores & Lifetime Stats Panel -->
+      <div class="w-full max-w-4xl glass-panel rounded-xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400 border border-slate-800">
+        <div class="flex items-center gap-2">
+          <i data-lucide="trophy" class="w-4 h-4 text-amber-400"></i>
+          <span class="text-slate-300 font-bold">BEST SCORES:</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+          <div>Bubbles (Easy/Med/Hard): <span id="home-best-bubbles" class="text-cyan-400 font-bold">0 / 0 / 0</span></div>
+          <div>KeyMagnet (Easy/Med/Hard): <span id="home-best-keymagnet" class="text-violet-400 font-bold">0 / 0 / 0</span></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span>Max Streak: <span id="home-best-streak" class="text-emerald-400 font-bold">0</span></span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VIEW 2: GAMEPLAY ARENA (DYNAMIC FOR MODES) -->
+    <!-- ========================================== -->
+    <section id="view-gameplay" class="hidden flex-1 flex flex-col h-full w-full max-w-5xl mx-auto">
+      
+      <!-- Top HUD / Game Status Bar -->
+      <div class="glass-panel rounded-2xl p-4 mb-4 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+        
+        <!-- Left: Mode and Difficulty Indicator -->
+        <div class="flex items-center gap-3">
+          <div id="hud-mode-icon" class="w-9 h-9 rounded-xl flex items-center justify-center bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+            <i data-lucide="circle-dot" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <div id="hud-mode-name" class="font-extrabold text-sm sm:text-base text-white tracking-wide uppercase">
+              BUBBLES
+            </div>
+            <div class="flex items-center gap-2 text-xs font-mono text-slate-400">
+              <span>DIFF: <strong id="hud-difficulty-label" class="text-cyan-400 uppercase">MEDIUM</strong></span>
+              <span class="text-slate-600">•</span>
+              <span id="hud-detail-label">MISSES: <strong id="hud-misses-count" class="text-rose-400">0</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center: Countdown Timer, Score & Combo Multiplier -->
+        <div class="flex items-center gap-4 sm:gap-6">
+          <!-- Prominent Countdown Timer -->
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700/80 shadow-inner">
+            <i data-lucide="clock" class="w-4 h-4 text-cyan-400" id="hud-timer-icon"></i>
+            <div class="flex flex-col items-start leading-none">
+              <span class="text-[9px] font-mono uppercase text-slate-400 tracking-wider">TIME LEFT</span>
+              <span id="hud-time-remaining" class="font-mono font-black text-lg sm:text-xl text-cyan-300 tracking-tight">05:00</span>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <div class="text-[10px] font-mono uppercase text-slate-400 tracking-wider">SCORE</div>
+            <div id="hud-score" class="font-mono font-black text-2xl sm:text-3xl text-white tracking-tight">
+              0
+            </div>
+          </div>
+
+          <div class="text-center">
+            <div class="text-[10px] font-mono uppercase text-slate-400 tracking-wider">COMBO STREAK</div>
+            <div class="flex items-center justify-center gap-1">
+              <span id="hud-streak" class="font-mono font-extrabold text-xl sm:text-2xl text-emerald-400">0</span>
+              <i data-lucide="flame" class="w-4 h-4 text-emerald-400 animate-bounce"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: In-Game Action Controls (Start / Pause / Restart / Reset) -->
+        <div class="flex items-center gap-2">
+          <!-- Pause / Resume Button -->
+          <button id="btn-ctrl-pause" type="button" title="Pause / Resume Game" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition text-xs font-mono flex items-center gap-1.5 active:scale-95">
+            <i id="hud-pause-icon" data-lucide="pause" class="w-4 h-4"></i>
+            <span id="hud-pause-label" class="hidden sm:inline">PAUSE</span>
+          </button>
+
+          <!-- Restart Button (Current Mode & Diff) -->
+          <button id="btn-ctrl-restart" type="button" title="Restart Game Session" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 transition text-xs font-mono flex items-center gap-1.5 active:scale-95">
+            <i data-lucide="rotate-ccw" class="w-4 h-4 text-cyan-400"></i>
+            <span class="hidden sm:inline">RESTART</span>
+          </button>
+
+          <!-- Quit / Reset to Mode Selection -->
+          <button id="btn-ctrl-reset" type="button" title="Reset and Exit to Home" class="p-2 sm:px-3 sm:py-2 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-800/60 text-rose-300 transition text-xs font-mono flex items-center gap-1.5 active:scale-95">
+            <i data-lucide="x-circle" class="w-4 h-4"></i>
+            <span class="hidden sm:inline">QUIT</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- ARENA CONTAINER (Supports Bubbles or KeyMagnet dynamically) -->
+      <div id="arena-main" class="relative flex-1 rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md overflow-hidden flex flex-col justify-between min-h-[560px] sm:min-h-[620px]">
+        
+        <!-- Canvas Particle Overlay -->
+        <canvas id="game-particle-canvas" class="absolute inset-0 pointer-events-none z-20 w-full h-full"></canvas>
+
+        <!-- SUB-ARENA A: BUBBLES CONTAINER -->
+        <div id="arena-bubbles" class="relative w-full h-full flex-1 overflow-hidden select-none">
+          <!-- Top Danger Threshold Line -->
+          <div id="bubble-danger-line" class="absolute top-10 inset-x-0 danger-line z-10 flex items-center justify-between px-4">
+            <span class="text-[10px] font-mono text-rose-500/80 tracking-widest uppercase">▲ DANGER CEILING ▲</span>
+            <span class="text-[10px] font-mono text-rose-500/80 tracking-widest uppercase">ESCAPE = MISS</span>
+          </div>
+
+          <!-- Dynamic floating bubbles spawn into this container -->
+          <div id="bubble-spawn-area" class="absolute inset-0 z-10"></div>
+        </div>
+
+        <!-- SUB-ARENA B: KEYMAGNET CONTAINER -->
+        <div id="arena-keymagnet" class="hidden relative w-full h-full flex-1 flex flex-col items-center justify-center p-4 z-10">
+          
+          <!-- KeyMagnet Progress & Countdown Bar -->
+          <div class="w-full max-w-xl mb-6">
+            <div class="flex items-center justify-between text-xs font-mono text-slate-400 mb-2">
+              <div class="flex items-center gap-2">
+                <span>TARGET:</span>
+                <span id="keymagnet-seq-counter" class="text-cyan-400 font-bold">1 / 25</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span>AVG REACTION:</span>
+                <span id="keymagnet-avg-reaction" class="text-violet-400 font-bold">0 ms</span>
+              </div>
+            </div>
+            <!-- Reaction Countdown Progress -->
+            <div class="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden border border-slate-700/60">
+              <div id="keymagnet-timer-bar" class="h-2 rounded-full transition-all duration-75 bg-cyan-400 w-full"></div>
+            </div>
+          </div>
+
+          <!-- Target Magnet Focal Pod -->
+          <div class="flex flex-col items-center justify-center mb-6">
+            <div class="relative">
+              <!-- Giant Target Character Display -->
+              <div id="keymagnet-target-display" class="target-pod w-28 h-28 sm:w-36 sm:h-36 rounded-3xl flex items-center justify-center font-mono font-black text-5xl sm:text-7xl text-cyan-300 shadow-2xl transition-all">
+                A
+              </div>
+              
+              <!-- Next Upcoming Key Indicator Bubble -->
+              <div class="absolute -top-3 -right-3 bg-slate-900 border border-slate-700 rounded-full px-2.5 py-1 flex items-center gap-1 shadow-lg">
+                <span class="text-[10px] font-mono text-slate-400 uppercase">NEXT:</span>
+                <span id="keymagnet-next-preview" class="text-xs font-mono font-bold text-violet-400">S</span>
+              </div>
+            </div>
+
+            <!-- Instant Key Response Feedback Label -->
+            <div id="keymagnet-live-feedback" class="h-6 mt-3 font-mono font-bold text-sm tracking-wide text-transparent">
+              READY
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Bottom Hardware Keyboard Status Bar -->
+        <div class="relative z-20 w-full py-2.5 px-4 bg-slate-950/80 border-t border-slate-800/80 backdrop-blur-md flex items-center justify-between text-xs font-mono text-slate-400">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-slate-200 font-bold">Hardware Keyboard Connected</span>
+            <span class="hidden sm:inline text-slate-500">• Type on your Laptop / PC keyboard</span>
+          </div>
+          <button id="btn-toggle-keyboard" type="button" class="text-[11px] px-3 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition flex items-center gap-1.5 active:scale-95">
+            <i data-lucide="keyboard" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span id="btn-toggle-keyboard-label">Show On-Screen Keys</span>
+          </button>
+        </div>
+
+        <!-- OPTIONAL VIRTUAL KEYBOARD PANEL (Hidden by default) -->
+        <div id="keyboard-panel-wrapper" class="hidden relative z-20 w-full p-2 sm:p-4 bg-slate-950/90 border-t border-slate-800/80 backdrop-blur-md transition-all">
+          <div class="flex items-center justify-between max-w-3xl mx-auto mb-2 px-1 text-[11px] font-mono text-slate-400">
+            <div class="flex items-center gap-1.5">
+              <i data-lucide="info" class="w-3.5 h-3.5 text-cyan-400"></i>
+              <span>On-Screen Touch Keys</span>
+            </div>
+          </div>
+
+          <!-- Virtual Keyboard Mount Point -->
+          <div id="virtual-keyboard-container" class="w-full"></div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- RESULTS & GAME OVER MODAL -->
+  <!-- ========================================== -->
+  <div id="modal-results" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-200">
+    <div class="glass-panel-accent max-w-lg w-full rounded-2xl p-6 sm:p-8 border border-slate-700 shadow-2xl relative overflow-hidden transform scale-95 transition-transform duration-200" id="modal-results-card">
+      
+      <!-- Decorative background blur -->
+      <div class="absolute -top-16 -right-16 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl"></div>
+
+      <!-- Header & Grade Badge -->
+      <div class="flex items-start justify-between mb-6">
+        <div>
+          <span id="results-mode-badge" class="text-xs font-mono uppercase tracking-widest text-cyan-400 bg-cyan-950/80 px-2.5 py-1 rounded-md border border-cyan-800/60">
+            BUBBLES COMPLETE
+          </span>
+          <h2 id="results-headline" class="text-2xl sm:text-3xl font-extrabold text-white mt-2">
+            Session Complete!
+          </h2>
+          <p id="results-subtext" class="text-xs font-mono text-slate-400 mt-1">
+            Difficulty: <span id="results-diff" class="text-cyan-400 uppercase">MEDIUM</span>
+          </p>
+        </div>
+
+        <!-- Grade Badge (S, A, B, C, D) -->
+        <div id="results-grade-badge" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-cyan-500 to-violet-600 flex flex-col items-center justify-center shadow-lg shadow-cyan-500/30 border border-white/20">
+          <span class="text-[10px] font-mono text-white/70">GRADE</span>
+          <span id="results-grade-text" class="text-2xl font-black text-white">A</span>
+        </div>
+      </div>
+
+      <!-- Performance Statistics Grid -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 font-mono">
+        <!-- Final Score -->
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 uppercase">FINAL SCORE</div>
+          <div id="res-score" class="text-xl sm:text-2xl font-black text-cyan-300">0</div>
+        </div>
+
+        <!-- Accuracy % -->
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 uppercase">ACCURACY</div>
+          <div id="res-accuracy" class="text-xl sm:text-2xl font-black text-emerald-400">0%</div>
+        </div>
+
+        <!-- Max Streak -->
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 uppercase">BEST STREAK</div>
+          <div id="res-streak" class="text-xl sm:text-2xl font-black text-amber-400">0</div>
+        </div>
+
+        <!-- Correct Hits -->
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 uppercase">CORRECT</div>
+          <div id="res-correct" class="text-xl sm:text-2xl font-black text-slate-200">0</div>
+        </div>
+
+        <!-- Misses / Errors -->
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 uppercase" id="res-misses-label">MISSES</div>
+          <div id="res-misses" class="text-xl sm:text-2xl font-black text-rose-400">0</div>
+        </div>
+
+        <!-- Mode-Specific Metric (Duration or Avg Response Time) -->
+        <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+          <div class="text-[10px] text-slate-400 uppercase" id="res-extra-label">DURATION</div>
+          <div id="res-extra-val" class="text-xl sm:text-2xl font-black text-violet-400">0s</div>
+        </div>
+      </div>
+
+      <!-- High Score Alert Notice -->
+      <div id="res-new-record-alert" class="hidden mb-6 p-3 rounded-xl bg-amber-950/40 border border-amber-500/50 text-amber-300 text-xs font-mono flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-4 h-4 text-amber-400"></i>
+        <span>NEW PERSONAL BEST RECORD ACHIEVED!</span>
+      </div>
+
+      <!-- Modal Action Buttons -->
+      <div class="flex items-center gap-3">
+        <button id="btn-results-retry" type="button" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-cyan-500/25 transition active:scale-95 flex items-center justify-center gap-2">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+          <span>PLAY AGAIN</span>
+        </button>
+
+        <button id="btn-results-home" type="button" class="py-3 px-5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-sm transition active:scale-95 flex items-center justify-center gap-2">
+          <i data-lucide="home" class="w-4 h-4"></i>
+          <span>HOME</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- HOW TO PLAY / INSTRUCTIONS MODAL -->
+  <!-- ========================================== -->
+  <div id="modal-instructions" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-200">
+    <div class="glass-panel-accent max-w-xl w-full rounded-2xl p-6 sm:p-8 border border-slate-700 shadow-2xl relative overflow-y-auto max-h-[90vh]">
+      
+      <div class="flex items-center justify-between mb-6 border-b border-slate-800 pb-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center border border-cyan-500/30">
+            <i data-lucide="book-open" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white">How to Play</h3>
+        </div>
+        <button id="btn-close-instructions" type="button" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-6 text-sm text-slate-300">
+        <!-- Bubbles Guide -->
+        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-cyan-400 flex items-center gap-2 mb-2">
+            <i data-lucide="circle-dot" class="w-4 h-4"></i>
+            Mode A: Bubbles (Letter Recognition)
+          </h4>
+          <p class="text-xs text-slate-400 leading-relaxed mb-3">
+            At least 5 bubbles float upward simultaneously. Press the corresponding key to pop the bubble before it reaches the top danger ceiling!
+          </p>
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-slate-950/60 p-2 rounded border border-slate-800/80">
+              <strong class="text-emerald-400">Correct Key:</strong> Pops bubble, +Points, combo multiplier!
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded border border-slate-800/80">
+              <strong class="text-rose-400">Wrong Key:</strong> Penalty deduction (-Score, combo reset).
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded border border-slate-800/80">
+              <strong class="text-amber-400">Escape Miss:</strong> Bubble hits top line = Miss recorded.
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded border border-slate-800/80">
+              <strong class="text-cyan-400">Session End:</strong> Time limit finishes (1, 3, 5, or 10 mins).
+            </div>
+          </div>
+        </div>
+
+        <!-- KeyMagnet Guide -->
+        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-violet-400 flex items-center gap-2 mb-2">
+            <i data-lucide="target" class="w-4 h-4"></i>
+            Mode B: KeyMagnet (Keyboard Precision)
+          </h4>
+          <p class="text-xs text-slate-400 leading-relaxed mb-3">
+            Targets are magnetized one by one from selected key sets (Home Row, Top Row, etc.). Type each key before the precision timer bar empties!
+          </p>
+          <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+            <div class="bg-slate-950/60 p-2 rounded border border-slate-800/80">
+              <strong class="text-emerald-400">Speed Bonus:</strong> Faster millisecond response awards higher points.
+            </div>
+            <div class="bg-slate-950/60 p-2 rounded border border-slate-800/80">
+              <strong class="text-rose-400">Timeout:</strong> If the timer bar runs out, it counts as an error.
+            </div>
+          </div>
+        </div>
+
+        <!-- Controls Guide -->
+        <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+          <h4 class="font-bold text-slate-200 mb-2">Controls & Accessibility</h4>
+          <ul class="text-xs text-slate-400 space-y-1 font-mono">
+            <li>• <strong>Any Key:</strong> Standard QWERTY desktop typing</li>
+            <li>• <strong>Touch / Mobile:</strong> Tap bubbles directly or tap on-screen keys</li>
+            <li>• <strong>M:</strong> Toggle Sound effects on/off</li>
+            <li>• <strong>Spacebar / Esc:</strong> Pause / Resume during gameplay</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-6 pt-4 border-t border-slate-800 flex justify-end">
+        <button id="btn-close-instructions-footer" type="button" class="px-5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-mono text-xs font-bold transition">
+          GOT IT
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="relative z-10 border-t border-slate-900 py-3 text-center text-xs text-slate-500 font-mono">
+    <span>TypeArcade &bull; Clean Architecture &bull; HTML5 / Tailwind / ES6+</span>
+  </footer>
+
+  <!-- Application Scripts (Clean Architecture modular order) -->
+  <script src="js/audio.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/particles.js"></script>
+  <script src="js/keyboard.js"></script>
+  <script src="js/modes/bubbles.js"></script>
+  <script src="js/modes/keymagnet.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- Lucide icons initialization -->
+  <script>
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  </script>
+</body>
+</html>
