@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Run Game in Chrome",
+            "file": "${workspaceFolder}/index.html"
+        },
+        {
+            "type": "msedge",
+            "request": "launch",
+            "name": "Run Game in Edge",
+            "file": "${workspaceFolder}/index.html"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Start Node Server (server.js)",
+            "program": "${workspaceFolder}/server.js"
+        }
+    ]
+}
